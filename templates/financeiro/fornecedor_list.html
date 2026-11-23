@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Fornecedores — ERP{% endblock %}
+{% block topbar_title %}Fornecedores{% endblock %}
+{% block nav_fornecedores %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Fornecedores</h1>
+    <a href="{% url 'financeiro:fornecedor-create' %}" class="btn-green">
+        <i class="ti ti-plus me-1"></i> Novo Fornecedor
+    </a>
+</div>
+
+<div class="card-dark">
+    <div class="card-body p-0">
+        <table class="table table-dark-custom mb-0 w-100">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>CNPJ</th>
+                    <th>Telefone</th>
+                    <th>E-mail</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fornecedor in fornecedores %}
+                <tr>
+                    <td>{{ fornecedor.nome }}</td>
+                    <td>{{ fornecedor.cnpj }}</td>
+                    <td>{{ fornecedor.telefone|default:"—" }}</td>
+                    <td>{{ fornecedor.email|default:"—" }}</td>
+                    <td style="text-align:right;">
+                        <a href="{% url 'financeiro:fornecedor-update' fornecedor.pk %}" class="btn-outline-green me-1">
+                            <i class="ti ti-edit"></i>
+                        </a>
+                        <a href="{% url 'financeiro:fornecedor-delete' fornecedor.pk %}" class="btn btn-sm js-confirmar-exclusao" data-nome="{{ fornecedor.nome }}" title="Excluir" style="background:#ef444415; color:#ef4444; border:0.5px solid #ef444430; border-radius:6px; padding:0.3rem 0.65rem; font-size:13px;">
+                            <i class="ti ti-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">
+                        Nenhum fornecedor cadastrado ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'partials/pagination.html' %}
+</div>
+{% endblock %}

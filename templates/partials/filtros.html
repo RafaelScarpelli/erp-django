@@ -1,0 +1,24 @@
+{% load paginacao %}
+{% comment %}
+Formulário de filtros genérico do django-filter. Uso:
+    {% include 'partials/filtros.html' with filtro=filter %}
+Envia por GET; a paginação (partials/pagination.html) preserva esses parâmetros.
+{% endcomment %}
+<div class="card-dark mb-3">
+    <div class="card-body" style="padding:0.9rem 1.25rem;">
+        <form method="get" class="row g-2 align-items-end">
+            {% for campo in filtro.form %}
+            <div class="col-md">
+                <label class="form-label" for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                {{ campo }}
+            </div>
+            {% endfor %}
+            <div class="col-md-auto d-flex gap-2">
+                <button type="submit" class="btn-green"><i class="ti ti-filter me-1"></i> Filtrar</button>
+                {% if request|tem_filtro_ativo %}
+                <a href="{{ request.path }}" class="btn-outline-green" title="Limpar filtros"><i class="ti ti-x"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>

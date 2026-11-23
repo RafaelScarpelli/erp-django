@@ -1,0 +1,41 @@
+{% load paginacao %}
+{% comment %}
+Paginação que PRESERVA os filtros da busca (django-filter) usando a
+templatetag própria `url_com_params` (erp/templatetags/paginacao.py).
+{% endcomment %}
+{% if is_paginated %}
+<nav style="display:flex; justify-content:center; align-items:center; gap:12px; padding:1rem;">
+    <ul class="pagination mb-0" style="gap:4px;">
+        {% if page_obj.has_previous %}
+        <li>
+            <a href="{% url_com_params page=1 %}" class="btn-outline-green" style="padding:0.35rem 0.7rem;" title="Primeira">
+                <i class="ti ti-chevrons-left"></i>
+            </a>
+        </li>
+        <li>
+            <a href="{% url_com_params page=page_obj.previous_page_number %}" class="btn-outline-green" style="padding:0.35rem 0.7rem;" title="Anterior">
+                <i class="ti ti-chevron-left"></i>
+            </a>
+        </li>
+        {% endif %}
+
+        <li style="display:flex; align-items:center; padding:0 0.75rem; color:var(--text-secondary); font-size:13px;">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            <span style="color:var(--text-muted); margin-left:6px;">({{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }})</span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li>
+            <a href="{% url_com_params page=page_obj.next_page_number %}" class="btn-outline-green" style="padding:0.35rem 0.7rem;" title="Próxima">
+                <i class="ti ti-chevron-right"></i>
+            </a>
+        </li>
+        <li>
+            <a href="{% url_com_params page=page_obj.paginator.num_pages %}" class="btn-outline-green" style="padding:0.35rem 0.7rem;" title="Última">
+                <i class="ti ti-chevrons-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

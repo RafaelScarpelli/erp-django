@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load ia_extras %}
+
+{% block title %}Assistente — ERP{% endblock %}
+{% block topbar_title %}Assistente IA{% endblock %}
+{% block nav_assistente %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="ti ti-message-chatbot me-2" style="color:var(--green-primary)"></i>Assistente do ERP</h1>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+            Tire dúvidas sobre o uso do sistema. O assistente não acessa seus dados e não executa ações.
+        </div>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <div style="font-size:12px; color:var(--text-secondary); text-align:right;">
+            <span id="consumo-texto">{{ resumo.usado }} / {{ resumo.limite }}</span> tokens no mês
+            <div class="barra-cota mt-1" style="width:160px;">
+                <div id="consumo-barra" class="{% if resumo.percentual >= 100 %}estourou{% elif resumo.percentual >= 80 %}alerta{% endif %}" style="width:{{ resumo.percentual }}%"></div>
+            </div>
+        </div>
+        {% if historico %}
+        <form method="post" action="{% url 'ia:assistente-limpar' %}" class="js-confirmar" data-mensagem="Apagar todo o seu histórico de conversa com o assistente?">
+            {% csrf_token %}
+            <button type="submit" class="btn-outline-green" title="Limpar histórico"><i class="ti ti-eraser"></i></button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if not ia_ativa %}
+<div class="alert alert-msg alert-msg-warning"><i class="ti ti-alert-triangle me-2"></i>A IA está desabilitada no momento. Peça ao administrador para ativá-la em <em>Configuração da IA</em>.</div>
+{% elif not resumo.habilitado %}
+<div class="alert alert-msg alert-msg-warning"><i class="ti ti-lock me-2"></i>Seu usuário não está habilitado para usar a IA.</div>
+{% endif %}
+
+<div class="card-dark">
+    <div class="chat-box" id="chat-box">
+        {% for m in historico %}
+            {% if m.papel == 'user' %}
+            <div class="chat-msg user">{{ m.conteudo }}<div class="meta">{{ m.criado_em|date:"d/m H:i" }}</div></div>
+            {% else %}
+            <div class="chat-msg assistant">{{ m.conteudo|markdown_seguro }}<div class="meta">Assistente · {{ m.criado_em|date:"d/m H:i" }}</div></div>
+            {% endif %}
+        {% empty %}
+            <div id="chat-vazio" style="margin:auto; text-align:center; color:var(--text-muted); font-size:13px;">
+                <i class="ti ti-sparkles" style="font-size:32px; color:var(--green-primary);"></i>
+                <p class="mt-2 mb-1">Olá, {{ request.user.username }}! Como posso ajudar?</p>
+                <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+                    <button type="button" class="btn-outline-green js-sugestao">Como registro uma venda?</button>
+                    <button type="button" class="btn-outline-green js-sugestao">Como dou baixa em uma conta a pagar?</button>
+                    <button type="button" class="btn-outline-green js-sugestao">Quando posso cancelar uma venda?</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="card-body" style="border-top:0.5px solid var(--border);">
+        <form id="form-pergunta" class="d-flex gap-2 align-items-end" autocomplete="off">
+            <textarea id="input-pergunta" class="form-control" rows="2" maxlength="2000"
+                      placeholder="Digite sua pergunta... (Enter envia, Shift+Enter quebra linha)"
+                      {% if not ia_ativa or not resumo.habilitado %}disabled{% endif %}></textarea>
+            <button type="submit" id="btn-enviar" class="btn-green" style="height:42px;" {% if not ia_ativa or not resumo.habilitado %}disabled{% endif %}>
+                <i class="ti ti-send"></i>
+            </button>
+        </form>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+            Apenas as últimas {{ janela }} mensagens da conversa são enviadas à IA como contexto. Respostas podem conter erros — confira no sistema.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(function () {
+    var $box = $('#chat-box'), $input = $('#input-pergunta'), $btn = $('#btn-enviar');
+    var URL_PERGUNTAR = "{% url 'ia:assistente-perguntar' %}";
+
+    function rolar() { $box.scrollTop($box[0].scrollHeight); }
+    function hora() { var d = new Date(); return ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2); }
+
+    function addUsuario(texto) {
+        $('#chat-vazio').remove();
+        // .text() — a pergunta do usuário NUNCA é inserida como HTML
+        var $m = $('<div class="chat-msg user">').text(texto);
+        $m.append($('<div class="meta">').text(hora()));
+        $box.append($m); rolar();
+    }
+    function addAssistente(htmlSanitizado) {
+        // HTML já convertido de Markdown e sanitizado no servidor (nh3)
+        var $m = $('<div class="chat-msg assistant">').html(htmlSanitizado);
+        $m.append($('<div class="meta">').text('Assistente · ' + hora()));
+        $box.append($m); rolar();
+    }
+    function addErro(texto) {
+        $box.append($('<div class="chat-msg erro">').text(texto)); rolar();
+    }
+    function atualizarConsumo(c) {
+        if (!c) return;
+        $('#consumo-texto').text(c.usado + ' / ' + c.limite);
+        $('#consumo-barra').css('width', c.percentual + '%')
+            .toggleClass('alerta', c.percentual >= 80 && c.percentual < 100)
+            .toggleClass('estourou', c.percentual >= 100);
+    }
+
+    function enviar(pergunta) {
+        pergunta = $.trim(pergunta);
+        if (!pergunta) return;
+        addUsuario(pergunta);
+        $input.val('');
+        $btn.prop('disabled', true);
+        var $digitando = $('<div class="chat-digitando">').html('<i class="ti ti-dots"></i> Assistente digitando...');
+        $box.append($digitando); rolar();
+
+        $.ajax({
+            url: URL_PERGUNTAR,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ pergunta: pergunta }),
+            headers: { 'X-CSRFToken': ERP.csrfToken() },   // proteção CSRF
+            dataType: 'json'
+        }).done(function (r) {
+            addAssistente(r.resposta_html);
+            atualizarConsumo(r.consumo);
+        }).fail(function (xhr) {
+            var erro = (xhr.responseJSON && xhr.responseJSON.erro) || 'Erro ao falar com o assistente.';
+            addErro(erro);
+        }).always(function () {
+            $digitando.remove();
+            $btn.prop('disabled', false);
+            $input.trigger('focus');
+        });
+    }
+
+    $('#form-pergunta').on('submit', function (e) { e.preventDefault(); enviar($input.val()); });
+    $input.on('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#form-pergunta').trigger('submit'); }
+    });
+    $(document).on('click', '.js-sugestao', function () { enviar($(this).text()); });
+    rolar();
+});
+</script>
+{% endblock %}

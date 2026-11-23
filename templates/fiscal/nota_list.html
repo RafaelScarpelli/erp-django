@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Notas Fiscais — ERP{% endblock %}
+{% block topbar_title %}Notas Fiscais{% endblock %}
+{% block nav_fiscal %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Notas Fiscais</h1>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+            <i class="ti ti-flask me-1"></i>Emissão simulada — sem integração real com a SEFAZ.
+        </div>
+    </div>
+</div>
+
+<div class="card-dark">
+    <div class="card-body p-0">
+        <table class="table table-dark-custom mb-0 w-100 js-datatable">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Venda</th>
+                    <th>Cliente</th>
+                    <th>Valor</th>
+                    <th>Emissão</th>
+                    <th>Status</th>
+                    <th class="no-sort"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota in notas %}
+                <tr>
+                    <td style="color:var(--text-primary);">{{ nota.numero }}/{{ nota.serie }}</td>
+                    <td><a href="{% url 'vendas:venda-detail' nota.venda.pk %}" style="color:var(--text-secondary);">#{{ nota.venda.pk }}</a></td>
+                    <td>{{ nota.venda.cliente|default:"—" }}</td>
+                    <td>R$ {{ nota.valor_total }}</td>
+                    <td>{{ nota.data_emissao|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if nota.status == 'EMITIDA' %}
+                            <span class="badge-green">Emitida</span>
+                        {% else %}
+                            <span class="badge-red">Cancelada</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right;">
+                        <a href="{% url 'fiscal:nota-detail' nota.pk %}" class="btn-outline-green">
+                            <i class="ti ti-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align:center; color:var(--text-muted); padding:2rem;">
+                        Nenhuma nota fiscal emitida ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'partials/pagination.html' %}
+</div>
+{% endblock %}

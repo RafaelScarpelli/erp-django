@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Conta a Receber — ERP{% endblock %}
+{% block topbar_title %}Conta a Receber{% endblock %}
+{% block nav_financeiro_r %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tabela-detalhe { width:100%; font-size:13px; border-collapse:collapse; }
+    .tabela-detalhe td { padding:0.5rem 0; border-bottom:0.5px solid var(--border); color:var(--text-primary); }
+    .tabela-detalhe td.lbl { color:var(--text-secondary); width:40%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ conta.descricao }}</h1>
+    <div style="display:flex; gap:8px;">
+        {% if conta.status == 'PENDENTE' %}
+        <a href="{% url 'financeiro:conta-receber-update' conta.pk %}" class="btn-outline-green"><i class="ti ti-edit me-1"></i> Editar</a>
+        <a href="{% url 'financeiro:conta-receber-delete' conta.pk %}" class="btn btn-sm js-confirmar-exclusao" data-nome="{{ conta.descricao }}"
+           style="background:#ef444415; color:#ef4444; border:0.5px solid #ef444430; border-radius:6px; padding:0.45rem 1rem; font-size:13px;">
+            <i class="ti ti-trash me-1"></i> Excluir
+        </a>
+        {% endif %}
+        <a href="{% url 'financeiro:conta-receber-list' %}" class="btn-outline-green"><i class="ti ti-arrow-left me-1"></i> Voltar</a>
+    </div>
+</div>
+
+<div class="card-dark" style="max-width:640px;">
+    <div class="card-header"><i class="ti ti-file-dollar me-2" style="color:var(--green-primary)"></i>Dados da conta</div>
+    <div class="card-body">
+        <table class="tabela-detalhe">
+            <tr><td class="lbl">Status</td><td>
+                {% if conta.status == 'RECEBIDA' %}<span class="badge-green">{{ conta.get_status_display }}</span>
+                {% elif conta.atrasada %}<span class="badge-red">Atrasada</span>
+                {% else %}<span class="badge-yellow">Pendente</span>{% endif %}
+            </td></tr>
+            <tr><td class="lbl">Cliente</td><td>{{ conta.cliente.nome }}</td></tr>
+                {% if conta.venda %}<tr><td class="lbl">Venda vinculada</td><td><a href="{% url 'vendas:venda-detail' conta.venda.pk %}" style="color:var(--green-primary);">#{{ conta.venda.pk }}</a></td></tr>{% endif %}
+            <tr><td class="lbl">Valor</td><td style="color:var(--green-primary); font-weight:600;">R$ {{ conta.valor }}</td></tr>
+            <tr><td class="lbl">Vencimento</td><td>{{ conta.vencimento|date:"d/m/Y" }}</td></tr>
+            {% if conta.data_recebimento %}
+            <tr><td class="lbl">Recebido em</td><td>{{ conta.data_recebimento|date:"d/m/Y" }} ({{ conta.get_forma_recebimento_display }})</td></tr>
+            {% endif %}
+            <tr><td class="lbl">Lançada por</td><td>{{ conta.usuario }}</td></tr>
+        </table>
+    </div>
+</div>
+{% endblock %}

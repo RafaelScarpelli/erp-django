@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Cota de IA — ERP{% endblock %}
+{% block topbar_title %}Cota de IA{% endblock %}
+{% block nav_ia_usuarios %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Cota de IA — {{ object.usuario.username }}</h1>
+    <a href="{% url 'ia:usuario-list' %}" class="btn-outline-green"><i class="ti ti-arrow-left me-1"></i> Voltar</a>
+</div>
+<div class="card-dark" style="max-width:480px;">
+    <div class="card-body">
+        <form method="post">{% csrf_token %}{% crispy form %}</form>
+    </div>
+</div>
+{% endblock %}

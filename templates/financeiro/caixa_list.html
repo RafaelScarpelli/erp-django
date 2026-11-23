@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Caixa — ERP{% endblock %}
+{% block topbar_title %}Caixa{% endblock %}
+{% block nav_caixa %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Movimentações de Caixa</h1>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+            Gerado automaticamente ao baixar contas a pagar/receber — não editável manualmente.
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card-dark p-3">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">Entradas</div>
+            <div style="font-size:20px; font-weight:500; color:var(--green-primary);">R$ {{ total_entradas|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-dark p-3">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">Saídas</div>
+            <div style="font-size:20px; font-weight:500; color:#ef4444;">R$ {{ total_saidas|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-dark p-3">
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">Saldo</div>
+            <div style="font-size:20px; font-weight:500; color:var(--text-primary);">R$ {{ saldo|floatformat:2 }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card-dark">
+    <div class="card-body p-0">
+        <table class="table table-dark-custom mb-0 w-100 js-datatable">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Origem</th>
+                    <th>Usuário</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentos %}
+                <tr>
+                    <td>
+                        {% if mov.tipo == 'ENTRADA' %}
+                            <span class="badge-green">Entrada</span>
+                        {% else %}
+                            <span class="badge-red">Saída</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:var(--text-primary);">R$ {{ mov.valor }}</td>
+                    <td>{{ mov.origem|default:"—" }}</td>
+                    <td>{{ mov.usuario|default:"—" }}</td>
+                    <td>{{ mov.data|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">
+                        Nenhuma movimentação registrada ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include 'partials/pagination.html' %}
+</div>
+{% endblock %}
