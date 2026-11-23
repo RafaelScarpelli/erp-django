@@ -1,0 +1,42 @@
+/* Ajustes visuais complementares (mensagens, plugins jQuery no tema escuro) */
+
+/* ===== Mensagens do Django por nível ===== */
+.alert-msg { border-radius: 6px; font-size: 13px; border: 0.5px solid; padding-right: 2.5rem; }
+.alert-msg-success { background: #22c55e18; border-color: #22c55e30; color: #22c55e; }
+.alert-msg-info    { background: #3b82f618; border-color: #3b82f630; color: #60a5fa; }
+.alert-msg-warning { background: #eab30818; border-color: #eab30830; color: #eab308; }
+.alert-msg-danger  { background: #ef444418; border-color: #ef444430; color: #ef4444; }
+.alert-msg .btn-close { filter: invert(1) grayscale(1); opacity: .5; padding: 1rem; }
+
+/* ===== Bootbox (modal Bootstrap) ===== */
+.modal-content { background: #1e1e1e; color: #e5e5e5; border: 0.5px solid #2a2a2a; }
+.modal-header, .modal-footer { border-color: #2a2a2a; }
+.modal-title { font-size: 15px; }
+.modal .btn-close { filter: invert(1); }
+.modal .btn-danger { font-size: 13px; }
+
+/* ===== DataTables ===== */
+div.dt-container { color: #888; font-size: 12px; }
+div.dt-container .dt-search { padding: .75rem 1rem 0; }
+div.dt-container .dt-search input { background: #111 !important; border: 0.5px solid #2a2a2a !important; color: #e5e5e5 !important; border-radius: 6px; }
+table.dataTable thead > tr > th.dt-orderable-asc:hover, table.dataTable thead > tr > th.dt-orderable-desc:hover { outline: none; color: #22c55e; }
+table.dataTable > tbody > tr { background: transparent; }
+
+/* ===== Assistente IA ===== */
+.chat-box { height: calc(100vh - 290px); min-height: 320px; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 12px; }
+.chat-msg { max-width: 80%; padding: .7rem 1rem; border-radius: 10px; font-size: 13.5px; line-height: 1.55; word-wrap: break-word; }
+.chat-msg.user { align-self: flex-end; background: #22c55e18; border: 0.5px solid #22c55e30; color: #e5e5e5; white-space: pre-wrap; }
+.chat-msg.assistant { align-self: flex-start; background: #161616; border: 0.5px solid #2a2a2a; color: #d4d4d4; }
+.chat-msg.erro { align-self: center; background: #ef444418; border: 0.5px solid #ef444430; color: #ef4444; font-size: 12px; }
+.chat-msg .meta { font-size: 10px; color: #555; margin-top: 4px; }
+.chat-msg.assistant p:last-child { margin-bottom: 0; }
+.chat-msg.assistant pre { background: #0d0d0d; padding: .6rem; border-radius: 6px; overflow-x: auto; }
+.chat-msg.assistant code { color: #86efac; }
+.chat-msg.assistant table { border-collapse: collapse; margin: .4rem 0; }
+.chat-msg.assistant th, .chat-msg.assistant td { border: 0.5px solid #2a2a2a; padding: .25rem .5rem; }
+.chat-digitando { color: #555; font-size: 12px; }
+
+.barra-cota { height: 8px; background: #111; border-radius: 99px; overflow: hidden; }
+.barra-cota > div { height: 100%; background: #22c55e; }
+.barra-cota > div.alerta { background: #eab308; }
+.barra-cota > div.estourou { background: #ef4444; }

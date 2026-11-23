@@ -1,0 +1,33 @@
+# Google App Engine — ambiente standard (ver DEPLOY.md)
+runtime: python313
+entrypoint: gunicorn -b :$PORT erp.wsgi:application --workers 2 --timeout 60
+
+instance_class: F1
+automatic_scaling:
+  min_instances: 0
+  max_instances: 2
+
+env_variables:
+  DEBUG: "False"
+  ALLOWED_HOSTS: ".appspot.com"
+  CSRF_TRUSTED_ORIGINS: "https://*.appspot.com"
+  # Preencha antes do deploy (ou use o Secret Manager):
+  SECRET_KEY: "TROQUE-POR-UMA-CHAVE-SECRETA-LONGA"
+  DB_NAME: "erp"
+  DB_USER: "erp"
+  DB_PASSWORD: "TROQUE-A-SENHA"
+  # Socket do Cloud SQL: /cloudsql/<PROJETO>:<REGIAO>:<INSTANCIA>
+  DB_HOST: "/cloudsql/SEU-PROJETO:southamerica-east1:erp-db"
+
+beta_settings:
+  cloud_sql_instances: "SEU-PROJETO:southamerica-east1:erp-db"
+
+handlers:
+  # Arquivos estáticos gerados por "python manage.py collectstatic"
+  - url: /static
+    static_dir: staticfiles/
+    secure: always
+
+  - url: /.*
+    script: auto
+    secure: always
